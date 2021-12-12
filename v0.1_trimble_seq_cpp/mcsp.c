@@ -20,6 +20,7 @@
 #include <sstream>
 #include <fstream>
 #include <nlohmann/json.hpp>
+#include "test_utility.h"
 
 // for convenience
 using json = nlohmann::json;
@@ -612,23 +613,7 @@ int main(int argc, char** argv) {
 
   clock_gettime(CLOCK_MONOTONIC, &start);
 
-  vector<VtxPair> solutionz = mcs(g0_sorted, g1_sorted);
-  vector<VtxPair> solution;
-  solution.push_back({0, 0});
-  solution.push_back({2, 5});
-  solution.push_back({3, 9});
-  solution.push_back({4, 7});
-  solution.push_back({5, 3});
-  solution.push_back({6, 8});
-  solution.push_back({8, 1});
-  solution.push_back({9, 2});
-  // solution.push_back({0, 0});
-  // solution.push_back({1, 9});
-  // solution.push_back({2, 5});
-  // solution.push_back({4, 8});
-  // solution.push_back({5, 3});
-  // solution.push_back({7, 2});
-  // solution.push_back({8, 1});
+  vector<VtxPair> solution = mcs(g0_sorted, g1_sorted);
 
   clock_gettime(CLOCK_MONOTONIC, &finish);
 
@@ -658,11 +643,14 @@ int main(int argc, char** argv) {
 
   if (!check_sol(g0, g1, solution)) fail("*** Error: Invalid solution\n");
 
+  std::vector<VtxPair> converted_solution;
   cout << "Solution size " << solution.size() << std::endl;
   for (int i = 0; i < g0.n; i++)
     for (unsigned int j = 0; j < solution.size(); j++)
-      if (solution[j].v == i)
+      if (solution[j].v == i){
         cout << "(" << solution[j].v << " -> " << solution[j].w << ") ";
+        converted_solution.push_back({solution[j].v, solution[j].w});
+      }
   cout << std::endl;
 
   printf(">>> %lu -  %015.10f\n", solution.size(), time_elapsed);
