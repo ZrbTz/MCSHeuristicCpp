@@ -531,7 +531,7 @@ int main(int argc, char** argv) {
   std::string node_heuristic(arguments.node_heuristic);
   vector<float> v1;
   vector<float> v2;
-  if(node_heuristic == "total_similarity"){
+  if(node_heuristic != "classic"){
     std::string folder_name(arguments.filename1);
     folder_name.erase(folder_name.size()-4, 2);
     std::stringstream ss(folder_name);
