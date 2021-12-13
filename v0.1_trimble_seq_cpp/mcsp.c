@@ -496,7 +496,7 @@ vector<VtxPair> mcs(const Graph& g0, const Graph& g1) {
   return incumbent;
 }
 
-vector<int> calculate_degrees(const Graph& g) {
+vector<float> calculate_degrees(const Graph& g) {
   vector<int> degree(g.n, 0);
   for (int v = 0; v < g.n; v++) {
     for (int w = 0; w < g.n; w++) {
@@ -505,7 +505,8 @@ vector<int> calculate_degrees(const Graph& g) {
       if (g.adjmat[v][w] & ~mask) degree[v]++;  // inward edge, in directed case
     }
   }
-  return degree;
+  std::vector<float> f_degree(degree.begin(), degree.end());
+  return f_degree;
 }
 
 int sum(const vector<float>& vec) {
@@ -528,32 +529,35 @@ int main(int argc, char** argv) {
 
  //**PRECOMPUTATION LOADING**//
   std::string node_heuristic(arguments.node_heuristic);
-  std::string folder_name(arguments.filename1);
-  folder_name.erase(folder_name.size()-4, 2);
-  std::stringstream ss(folder_name);
-  std::vector<std::string> v;
-  std::string buff;
-  while(std::getline(ss, buff, '/')){
-    v.push_back(buff);
-  }
-
-  std::string test_name = v[v.size()-1];
-
-  std::ifstream jsonfile1("../precomputed_vectors_" + node_heuristic + "/" + test_name + "/g1.json");
-  json mylist1;
-  jsonfile1 >> mylist1;
-
-  std::ifstream jsonfile2("../precomputed_vectors_" + node_heuristic + "/" + test_name + "/g2.json");
-  json mylist2;
-  jsonfile2 >> mylist2;
-
   vector<float> v1;
-  for(auto& elem: mylist1){
-    v1.push_back(elem.get<float>());
-  }
   vector<float> v2;
-  for(auto& elem: mylist2){
-    v2.push_back(elem.get<float>());
+  if(node_heuristic == "total_similarity"){
+    std::string folder_name(arguments.filename1);
+    folder_name.erase(folder_name.size()-4, 2);
+    std::stringstream ss(folder_name);
+    std::vector<std::string> v;
+    std::string buff;
+    while(std::getline(ss, buff, '/')){
+      v.push_back(buff);
+    }
+
+    std::string test_name = v[v.size()-1];
+
+    std::ifstream jsonfile1("../precomputed_vectors_" + node_heuristic + "/" + test_name + "/g1.json");
+    json mylist1;
+    jsonfile1 >> mylist1;
+
+    std::ifstream jsonfile2("../precomputed_vectors_" + node_heuristic + "/" + test_name + "/g2.json");
+    json mylist2;
+    jsonfile2 >> mylist2;
+
+    for(auto& elem: mylist1){
+      v1.push_back(elem.get<float>());
+    }
+    
+    for(auto& elem: mylist2){
+      v2.push_back(elem.get<float>());
+    }
   }
   //**END PRECOMPUTATION LOADING**//
 
@@ -586,15 +590,16 @@ int main(int argc, char** argv) {
 
   // auto start = std::chrono::steady_clock::now();
 
-  // vector<int> g0_deg = calculate_degrees(g0);
-  // vector<int> g1_deg = calculate_degrees(g1);
-  vector<float> g0_deg = v1;
-  vector<float> g1_deg = v2;
-  for(auto& a: v1){
-    std::cout << a << " ";
-  }
-  std::cout << endl;
-
+vector<float> g0_deg;
+vector<float> g1_deg;
+if(node_heuristic != "classic"){
+  g0_deg = v1;
+  g1_deg = v2;
+}
+else{
+  g0_deg = calculate_degrees(g0);
+  g1_deg = calculate_degrees(g1);
+}
 
   // As implemented here, g1_dense and g0_dense are false for all instances
   // in the Experimental Evaluation section of the paper.  Thus,
