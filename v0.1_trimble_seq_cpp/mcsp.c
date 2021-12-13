@@ -402,7 +402,7 @@ void solve(const Graph& g0, const Graph& g1, vector<VtxPair>& incumbent,
   if (current.size() > incumbent.size()) {
     incumbent = current;
     if (!arguments.quiet)
-      cout << "Incumbent size: " << incumbent.size() << endl;
+      cout << "Incumbent size: " << incumbent.size() << " Recursions: " << nodes << endl;
   }
 
   unsigned int bound = current.size() + calc_bound(domains);
@@ -508,7 +508,7 @@ vector<int> calculate_degrees(const Graph& g) {
   return degree;
 }
 
-int sum(const vector<int>& vec) {
+int sum(const vector<float>& vec) {
   return std::accumulate(std::begin(vec), std::end(vec), 0);
 }
 
@@ -525,6 +525,8 @@ int main(int argc, char** argv) {
       readGraph(arguments.filename2, format, arguments.directed,
                 arguments.edge_labelled, arguments.vertex_labelled);
 
+
+ //**PRECOMPUTATION LOADING**//
   std::string node_heuristic(arguments.node_heuristic);
   std::string folder_name(arguments.filename1);
   folder_name.erase(folder_name.size()-4, 2);
@@ -534,9 +536,9 @@ int main(int argc, char** argv) {
   while(std::getline(ss, buff, '/')){
     v.push_back(buff);
   }
+
   std::string test_name = v[v.size()-1];
 
-  //std::cout << "precomputed_vectors_total_similarity/" + test_name + "/g2.json" << std::endl;
   std::ifstream jsonfile1("../precomputed_vectors_" + node_heuristic + "/" + test_name + "/g1.json");
   json mylist1;
   jsonfile1 >> mylist1;
@@ -545,14 +547,15 @@ int main(int argc, char** argv) {
   json mylist2;
   jsonfile2 >> mylist2;
 
-  vector<int> v1;
+  vector<float> v1;
   for(auto& elem: mylist1){
-    v1.push_back(elem.get<int>());
+    v1.push_back(elem.get<float>());
   }
-  vector<int> v2;
+  vector<float> v2;
   for(auto& elem: mylist2){
-    v2.push_back(elem.get<int>());
+    v2.push_back(elem.get<float>());
   }
+  //**END PRECOMPUTATION LOADING**//
 
   std::thread timeout_thread;
   std::mutex timeout_mutex;
@@ -585,8 +588,12 @@ int main(int argc, char** argv) {
 
   // vector<int> g0_deg = calculate_degrees(g0);
   // vector<int> g1_deg = calculate_degrees(g1);
-  vector<int> g0_deg = v1;
-  vector<int> g1_deg = v2;
+  vector<float> g0_deg = v1;
+  vector<float> g1_deg = v2;
+  for(auto& a: v1){
+    std::cout << a << " ";
+  }
+  std::cout << endl;
 
 
   // As implemented here, g1_dense and g0_dense are false for all instances
@@ -617,11 +624,11 @@ int main(int argc, char** argv) {
 
   clock_gettime(CLOCK_MONOTONIC, &finish);
 
-  // // Convert to indices from original, unsorted graphs
-  // for (auto& vtx_pair : solution) {
-  //   vtx_pair.v = vv0[vtx_pair.v];
-  //   vtx_pair.w = vv1[vtx_pair.w];
-  // }
+  // Convert to indices from original, unsorted graphs
+  for (auto& vtx_pair : solution) {
+    vtx_pair.v = vv0[vtx_pair.v];
+    vtx_pair.w = vv1[vtx_pair.w];
+  }
 
   time_elapsed = (finish.tv_sec - start.tv_sec);  // calculating elapsed seconds
   time_elapsed += (double)(finish.tv_nsec - start.tv_nsec) /
