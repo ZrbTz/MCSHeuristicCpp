@@ -23,15 +23,9 @@ void Test::to_string(){
     }
 }
 
-void Test::save_json(){
-    json jsonfile;
+void save_json(Test& t){
+    json jsonfile = t;
 
-    jsonfile["milestones"] = this-> milestones;
-    jsonfile["solution"] = this->solution;
-    jsonfile["test_description"] = this->td;
-    jsonfile["recursions"] = this->recursions;
-    jsonfile["total_time"] = this->total_time;
-
-    std::ofstream file(this->td.test_name + ".json");
+    std::ofstream file("../test_results/" + t.td.test_name + ".json");
     file << jsonfile;
  }

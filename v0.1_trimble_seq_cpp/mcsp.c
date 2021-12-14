@@ -683,5 +683,5 @@ else{
   if (aborted) cout << "TIMEOUT" << endl;
 
   test_info.to_string();
-  test_info.save_json();
+  save_json(test_info);
 }

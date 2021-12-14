@@ -25,7 +25,6 @@ public:
     Test(TestDescription td):td(td), total_time(0), recursions(0){}
     Test(){}
     void to_string();
-    void save_json();
     TestDescription td;
     float total_time;
     int recursions;
@@ -37,3 +36,10 @@ inline void to_json(json& j, const TestDescription& t){
     j = json{{"test_name", t.test_name}, {"vertex_labelled", t.vertex_labelled}, {"directed", t.directed}, {"connected", t.connected},
         {"edge_labelled", t.edge_labelled}, {"timeout", t.timeout}, {"node_heuristic"}, t.node_heuristic};
 }
+
+inline void to_json(json& j, const Test& t){
+    j = json{{"milestones", t.milestones}, {"solution", t.solution}, {"test_description", t.td}, {"recursions", t.recursions},
+        {"total_time", t.total_time}};
+}
+
+void save_json(Test& t);
