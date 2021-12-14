@@ -36,6 +36,8 @@ static void fail(std::string msg) {
   exit(1);
 }
 
+TestDescription td;
+Test test_info;
 enum Heuristic { min_max, min_product };
 
 /*******************************************************************************
@@ -401,8 +403,10 @@ void solve(const Graph& g0, const Graph& g1, vector<VtxPair>& incumbent,
 
   if (current.size() > incumbent.size()) {
     incumbent = current;
-    if (!arguments.quiet)
+    if (!arguments.quiet){
       cout << "Incumbent size: " << incumbent.size() << " Recursions: " << nodes << endl;
+      test_info.milestones.push_back({incumbent.size(), nodes});
+    }
   }
 
   unsigned int bound = current.size() + calc_bound(domains);
@@ -493,6 +497,7 @@ vector<VtxPair> mcs(const Graph& g0, const Graph& g1) {
     solve(g0, g1, incumbent, current, domains, left, right, 1);
   }
 
+  test_info.recursions = nodes;
   return incumbent;
 }
 
@@ -513,6 +518,7 @@ int sum(const vector<float>& vec) {
   return std::accumulate(std::begin(vec), std::end(vec), 0);
 }
 
+
 int main(int argc, char** argv) {
   set_default_arguments();
   argp_parse(&argp, argc, argv, 0, 0, 0);
@@ -527,22 +533,25 @@ int main(int argc, char** argv) {
                 arguments.edge_labelled, arguments.vertex_labelled);
 
 
+  //**TEST STRUCTURE**//
+  std::string folder_name(arguments.filename1);
+  folder_name.erase(folder_name.size()-4, 2);
+  std::stringstream ss(folder_name);
+  std::vector<std::string> v;
+  std::string buff;
+  while(std::getline(ss, buff, '/')){
+    v.push_back(buff);
+  }
+  std::string test_name = v[v.size()-1];
+
+  td = TestDescription(test_name, arguments.vertex_labelled, arguments.directed, arguments.connected, arguments.edge_labelled, arguments.timeout, arguments.node_heuristic);
+  test_info = Test(td);
+
  //**PRECOMPUTATION LOADING**//
   std::string node_heuristic(arguments.node_heuristic);
   vector<float> v1;
   vector<float> v2;
   if(node_heuristic != "classic"){
-    std::string folder_name(arguments.filename1);
-    folder_name.erase(folder_name.size()-4, 2);
-    std::stringstream ss(folder_name);
-    std::vector<std::string> v;
-    std::string buff;
-    while(std::getline(ss, buff, '/')){
-      v.push_back(buff);
-    }
-
-    std::string test_name = v[v.size()-1];
-
     std::ifstream jsonfile1("../precomputed_vectors_" + node_heuristic + "/" + test_name + "/g1.json");
     json mylist1;
     jsonfile1 >> mylist1;
@@ -629,16 +638,20 @@ else{
 
   clock_gettime(CLOCK_MONOTONIC, &finish);
 
+  std::vector<std::pair<int,int>> solution_to_save;
   // Convert to indices from original, unsorted graphs
   for (auto& vtx_pair : solution) {
     vtx_pair.v = vv0[vtx_pair.v];
     vtx_pair.w = vv1[vtx_pair.w];
+    solution_to_save.push_back({vtx_pair.v, vtx_pair.w});
   }
+
+  test_info.solution = solution_to_save;
 
   time_elapsed = (finish.tv_sec - start.tv_sec);  // calculating elapsed seconds
   time_elapsed += (double)(finish.tv_nsec - start.tv_nsec) /
                   1000000000.0;  // adding elapsed nanoseconds
-
+  test_info.total_time = time_elapsed;
   // auto stop = std::chrono::steady_clock::now();
   // auto time_elapsed =
   // std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count();
@@ -655,13 +668,11 @@ else{
 
   if (!check_sol(g0, g1, solution)) fail("*** Error: Invalid solution\n");
 
-  std::vector<VtxPair> converted_solution;
   cout << "Solution size " << solution.size() << std::endl;
   for (int i = 0; i < g0.n; i++)
     for (unsigned int j = 0; j < solution.size(); j++)
       if (solution[j].v == i){
         cout << "(" << solution[j].v << " -> " << solution[j].w << ") ";
-        converted_solution.push_back({solution[j].v, solution[j].w});
       }
   cout << std::endl;
 
@@ -670,4 +681,7 @@ else{
   cout << "Nodes:                      " << nodes << endl;
   cout << "CPU time (ms):              " << time_elapsed << endl;
   if (aborted) cout << "TIMEOUT" << endl;
+
+  test_info.to_string();
+  test_info.save_json();
 }
