@@ -34,7 +34,7 @@ public:
 
 inline void to_json(json& j, const TestDescription& t){
     j = json{{"test_name", t.test_name}, {"vertex_labelled", t.vertex_labelled}, {"directed", t.directed}, {"connected", t.connected},
-        {"edge_labelled", t.edge_labelled}, {"timeout", t.timeout}, {"node_heuristic"}, t.node_heuristic};
+        {"edge_labelled", t.edge_labelled}, {"timeout", t.timeout}, {"node_heuristic", t.node_heuristic}};
 }
 
 inline void to_json(json& j, const Test& t){
