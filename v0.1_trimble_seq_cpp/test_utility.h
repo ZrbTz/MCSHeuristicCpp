@@ -27,8 +27,8 @@ public:
     void to_string();
     TestDescription td;
     float total_time;
-    int recursions;
-    std::vector<std::pair<int, int>> milestones;
+    unsigned long long recursions;
+    std::vector<std::pair<int, unsigned long long>> milestones;
     std::vector<std::pair<int, int>> solution;
 };
 
@@ -42,4 +42,4 @@ inline void to_json(json& j, const Test& t){
         {"total_time", t.total_time}};
 }
 
-void save_json(Test& t);
+void save_json(Test& t, std::string save_folder);

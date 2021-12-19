@@ -47,7 +47,7 @@ enum Heuristic { min_max, min_product };
 static char doc[] =
     "Find a maximum clique in a graph in DIMACS format\vHEURISTIC can be "
     "min_max or min_product. NODE_HEURISTIC can be degree, total_similarity or norm";
-static char args_doc[] = "HEURISTIC NODE_HEURISTIC FILENAME1 FILENAME2";
+static char args_doc[] = "HEURISTIC NODE_HEURISTIC FILENAME1 FILENAME2 LOAD_FOLDER SAVE_FOLDER";
 static struct argp_option options[] = {
     {"quiet", 'q', 0, 0, "Quiet output"},
     {"verbose", 'v', 0, 0, "Verbose output"},
@@ -82,6 +82,8 @@ static struct {
   int prime;
   int arg_num;
   std::string node_heuristic;
+  std::string load_folder;
+  std::string save_folder;
 } arguments;
 
 static std::atomic<bool> abort_due_to_timeout;
@@ -166,7 +168,14 @@ static error_t parse_opt(int key, char* arg, struct argp_state* state) {
         arguments.filename1 = arg;
       } else if (arguments.arg_num == 3) {
         arguments.filename2 = arg;
-      } else {
+      }
+        else if(arguments.arg_num == 4){
+          arguments.load_folder = arg;
+        }
+        else if(arguments.arg_num == 5){
+          arguments.save_folder = arg;
+        }
+       else {
         argp_usage(state);
       }
       arguments.arg_num++;
@@ -552,11 +561,12 @@ int main(int argc, char** argv) {
   vector<float> v1;
   vector<float> v2;
   if(node_heuristic != "classic"){
-    std::ifstream jsonfile1("../precomputed_vectors_" + node_heuristic + "/" + test_name + "/g1.json");
+    std::string load_folder(arguments.load_folder);
+    std::ifstream jsonfile1(load_folder + "/" + test_name + "/g1.json");
     json mylist1;
     jsonfile1 >> mylist1;
 
-    std::ifstream jsonfile2("../precomputed_vectors_" + node_heuristic + "/" + test_name + "/g2.json");
+    std::ifstream jsonfile2(load_folder + "/" + test_name+ "/g2.json");
     json mylist2;
     jsonfile2 >> mylist2;
 
@@ -683,5 +693,6 @@ else{
   if (aborted) cout << "TIMEOUT" << endl;
 
   test_info.to_string();
-  save_json(test_info);
+  std::string save_folder(arguments.save_folder);
+  save_json(test_info, save_folder);
 }

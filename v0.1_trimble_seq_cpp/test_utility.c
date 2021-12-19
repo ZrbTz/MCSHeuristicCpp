@@ -23,9 +23,9 @@ void Test::to_string(){
     }
 }
 
-void save_json(Test& t){
+void save_json(Test& t, std::string save_folder){
     json jsonfile = t;
 
-    std::ofstream file("../test_results/" + t.td.test_name + ".json");
+    std::ofstream file(save_folder + "/" + t.td.test_name  + ".json");
     file << jsonfile;
  }

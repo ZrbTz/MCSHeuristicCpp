@@ -161,6 +161,7 @@ def launch_solver(input_files: List[str],
     g0_score = [x for x in g0_score]
     g1_score = [x for x in g1_score]
 
+
     return g0_score, g1_score
 
 
@@ -195,8 +196,8 @@ def get_embedding_norm(g0_nx: nx.DiGraph, g1_nx: nx.DiGraph, model, hops:int, ba
     left_embeddings = get_nodes_embeddings(set_nodes_g0, g0_nx, model, list_nodes_g0, hops, batch_size)
     right_embeddings = get_nodes_embeddings(set_nodes_g1, g1_nx, model, list_nodes_g1, hops, batch_size)
 
-    left_norms = [np.linalg.norm(emb) for emb in left_embeddings]
-    right_norms = [np.linalg.norm(emb) for emb in right_embeddings]
+    left_norms = [np.linalg.norm(emb).item() for emb in left_embeddings]
+    right_norms = [np.linalg.norm(emb).item() for emb in right_embeddings]
 
     return np.array(left_norms), np.array(right_norms)
 

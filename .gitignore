@@ -1,4 +1,10 @@
 __pycache__/
 text_ben/
 mcs-instances/
-precomputed_vectors_total_similarity/
+precomputed_vectors/
+test_results/
+text_ben/
+f1/
+f2/
+f3/
+f4/
